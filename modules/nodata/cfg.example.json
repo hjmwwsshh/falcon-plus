@@ -18,7 +18,12 @@
     "collector":{
         "enabled": true,
         "batch": 200,
-        "concurrent": 10
+        "concurrent": 10,
+        "step": 10
+    },
+    "judge":{
+        "step": 20,
+        "interval": 2
     },
     "sender":{
         "enabled": true,

@@ -37,7 +37,16 @@ var (
 )
 
 func StartCollectorCron() {
-	collectorCron.AddFuncCC("*/20 * * * * ?", func() {
+	//
+	cfg := g.Config().Collector
+	step := int(cfg.Step)
+	if step < 10 || step > 60 {
+		step = 20
+	}
+	collectorCronSpec := fmt.Sprintf("*/%d * * * ?", step)
+	//
+	
+	collectorCron.AddFuncCC(collectorCronSpec, func() {
 		start := time.Now().Unix()
 		cnt := collectDataOnce()
 		end := time.Now().Unix()

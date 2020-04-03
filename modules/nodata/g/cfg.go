@@ -43,6 +43,12 @@ type CollectorConfig struct {
 	Enabled    bool  `json:"enabled"`
 	Batch      int32 `json:"batch"`
 	Concurrent int32 `json:"concurrent"`
+	Step       int32 `json:"step"`
+}
+
+type JudgeConfig struct {
+	Step       int32 `json:"step"`
+	Interval   int32 `json:"interval"`
 }
 
 type SenderConfig struct {
@@ -60,6 +66,7 @@ type GlobalConfig struct {
 	Config    *NdConfig        `json:"config"`
 	Collector *CollectorConfig `json:"collector"`
 	Sender    *SenderConfig    `json:"sender"`
+	Judge     *JudgeConfig     `json:"judge"`
 }
 
 var (

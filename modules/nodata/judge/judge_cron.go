@@ -17,7 +17,7 @@ package judge
 import (
 	"log"
 	"time"
-
+	"fmt"
 	cmodel "github.com/open-falcon/falcon-plus/common/model"
 	cutils "github.com/open-falcon/falcon-plus/common/utils"
 	tcron "github.com/toolkits/cron"
@@ -31,10 +31,18 @@ import (
 
 var (
 	judgeCron     = tcron.New()
-	judgeCronSpec = "0 * * * * ?"
+	//judgeCronSpec = "0 * * * * ?"
 )
 
 func StartJudgeCron() {
+	//
+	cfg := g.Config().Judge
+	step := int(cfg.Step)
+	if step < 10 || step > 60 {
+		step = 20
+	}
+	judgeCronSpec := fmt.Sprintf("*/%d * * * ?", step)
+	//
 	judgeCron.AddFuncCC(judgeCronSpec, func() {
 		start := time.Now().Unix()
 		judge()
@@ -109,11 +117,12 @@ func genTs(nowTs int64, step int64) int64 {
 }
 
 func getTimeout(step int64) int64 {
-	if step < 60 {
-		return 180 //60*3
-	}
-
-	return step * 3
+	//if step < 60 {
+	//	return 180 //60*3
+	//}
+	cfg := g.Config().Judge
+	interval := int64(cfg.Interval)
+	return step * interval
 }
 
 const minfloat64 = 0.000001
