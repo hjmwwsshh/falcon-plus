@@ -71,11 +71,11 @@ func Start() {
 
 // RRA.Point.Size
 const (
-	RRA1PointCnt   = 720 // 1m一个点存12h
-	RRA5PointCnt   = 576 // 5m一个点存2d
-	RRA20PointCnt  = 504 // 20m一个点存7d
-	RRA180PointCnt = 766 // 3h一个点存3month
-	RRA720PointCnt = 730 // 12h一个点存1year
+	RRA1PointCnt   = 60480  // 原始10秒1个点，存7天
+	RRA3PointCnt   = 120960 // 3个原始点合成1个点存(30秒)，存42天
+	RRA30PointCnt  = 51840  // 30个原始点合成1个点存(300秒,5分钟)，存180天
+	RRA90PointCnt  = 34560  // 90个原始点合成一个点存(900秒,15分钟)，存360天
+	RRA180PointCnt = 34560  // 180个原始点合成一个点存(1800秒,30分钟)，存720天
 )
 
 func create(filename string, item *cmodel.GraphItem) error {
@@ -87,28 +87,20 @@ func create(filename string, item *cmodel.GraphItem) error {
 	c.DS("metric", item.DsType, item.Heartbeat, item.Min, item.Max)
 
 	// 设置各种归档策略
-	// 1分钟一个点存 12小时
+	// 原始一个点存
 	c.RRA("AVERAGE", 0, 1, RRA1PointCnt)
 
-	// 5m一个点存2d
-	c.RRA("AVERAGE", 0, 5, RRA5PointCnt)
-	c.RRA("MAX", 0, 5, RRA5PointCnt)
-	c.RRA("MIN", 0, 5, RRA5PointCnt)
+	// 将3个原始点合成一个点存
+	c.RRA("AVERAGE", 0, 3, RRA3PointCnt)
 
-	// 20m一个点存7d
-	c.RRA("AVERAGE", 0, 20, RRA20PointCnt)
-	c.RRA("MAX", 0, 20, RRA20PointCnt)
-	c.RRA("MIN", 0, 20, RRA20PointCnt)
+	// 将30个原始点合成一个点存
+	c.RRA("AVERAGE", 0, 30, RRA30PointCnt)
 
-	// 3小时一个点存3个月
+	// 将90个原始点合成一个点存
+	c.RRA("AVERAGE", 0, 90, RRA90PointCnt)
+
+	// 将180个原始点合成一个点存
 	c.RRA("AVERAGE", 0, 180, RRA180PointCnt)
-	c.RRA("MAX", 0, 180, RRA180PointCnt)
-	c.RRA("MIN", 0, 180, RRA180PointCnt)
-
-	// 12小时一个点存1year
-	c.RRA("AVERAGE", 0, 720, RRA720PointCnt)
-	c.RRA("MAX", 0, 720, RRA720PointCnt)
-	c.RRA("MIN", 0, 720, RRA720PointCnt)
 
 	return c.Create(true)
 }
