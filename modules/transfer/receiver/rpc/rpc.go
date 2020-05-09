@@ -15,6 +15,7 @@
 package rpc
 
 import (
+	"crypto/tls"
 	"github.com/open-falcon/falcon-plus/modules/transfer/g"
 	"log"
 	"net"
@@ -51,6 +52,55 @@ func StartRpc() {
 		}
 
 		conn.SetKeepAlive(true)
+		go server.ServeCodec(jsonrpc.NewServerCodec(conn))
+	}
+}
+
+func StartRpcWithTLS() {
+	if !g.Config().RpcWithTLS.Enabled {
+		return
+	}
+
+	addr := g.Config().RpcWithTLS.Listen
+	_, err := net.ResolveTCPAddr("tcp", addr)
+	if err != nil {
+		log.Fatalf("net.ResolveTCPAddr fail: %s", err)
+	}
+
+	certFilePath := g.Config().RpcWithTLS.CrtFile
+	keyFilePath := g.Config().RpcWithTLS.KeyFile
+
+	cert, err := tls.LoadX509KeyPair(certFilePath, keyFilePath)
+	if err != nil {
+		log.Fatalf("load key pair fail: %s", err)
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		PreferServerCipherSuites: true,
+		CurvePreferences: []tls.CurveID{
+			tls.CurveP256,
+			tls.X25519,
+		},
+	}
+
+	listener, err := tls.Listen("tcp", addr,config)
+	if err != nil {
+		log.Fatalf("listen %s fail: %s", addr, err)
+	} else {
+		log.Println("rpc listening", addr)
+	}
+
+	server := rpc.NewServer()
+	server.Register(new(Transfer))
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Println("listener.Accept occur error:", err)
+			continue
+		}
+
 		go server.ServeCodec(jsonrpc.NewServerCodec(conn))
 	}
 }

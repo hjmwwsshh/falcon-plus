@@ -15,13 +15,14 @@
 package backend_pool
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
 	"sync"
 	"time"
-
+	"github.com/open-falcon/falcon-plus/modules/transfer/g"
 	connp "github.com/toolkits/conn_pool"
 	rpcpool "github.com/toolkits/conn_pool/rpc_conn_pool"
 )
@@ -157,12 +158,23 @@ func createOneJsonrpcPool(name string, address string, connTimeout time.Duration
 			return nil, err
 		}
 
-		conn, err := net.DialTimeout("tcp", p.Address, connTimeout)
-		if err != nil {
-			return nil, err
+		if !g.Config().Transfer.UseTLS { //通过读取配置文件确定是否使用tls来发送数据到transfer
+			conn, err := net.DialTimeout("tcp", p.Address, connTimeout)
+			if err != nil {
+				return nil, err
+			}
+			return rpcpool.NewRpcClientWithCodec(jsonrpc.NewClientCodec(conn), connName), nil
+		} else {
+			config := &tls.Config{
+				InsecureSkipVerify: true,
+			}
+			//
+			conn, err := tls.Dial("tcp", p.Address, config)
+			if err != nil {
+				return nil, err
+			}
+			return rpcpool.NewRpcClientWithCodec(jsonrpc.NewClientCodec(conn), connName), nil
 		}
-
-		return rpcpool.NewRpcClientWithCodec(jsonrpc.NewClientCodec(conn), connName), nil
 	}
 
 	return p

@@ -21,5 +21,6 @@ import (
 
 func Start() {
 	go rpc.StartRpc()
+	go rpc.StartRpcWithTLS()
 	go socket.StartSocket()
 }

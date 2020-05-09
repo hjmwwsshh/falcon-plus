@@ -9,6 +9,12 @@
         "enabled": true,
         "listen": "0.0.0.0:8433"
     },
+    "rpcWithTLS": {
+        "enabled": true,
+        "listen": "0.0.0.0:8434",
+        "crtFile" : "transfer/tls/server.crt",
+        "keyFile" : "transfer/tls/server.key"
+    },
     "socket": {
         "enabled": true,
         "listen": "0.0.0.0:4444",
@@ -50,6 +56,7 @@
     },
     "transfer": {
         "enabled": false,
+        "useTLS": false,
         "batch": 200,
         "connTimeout": 1000,
         "callTimeout": 5000,

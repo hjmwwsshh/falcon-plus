@@ -33,6 +33,13 @@ type RpcConfig struct {
 	Listen  string `json:"listen"`
 }
 
+type RpcWithTLSConfig struct {         //带有tls加密的RPC配置,可以在不同网络间供transfer互相传输数据时使用
+	Enabled bool   `json:"enabled"`    //是否启用带有tls加密的RPC端口监听
+	Listen  string `json:"listen"`     //监听的地址
+	CrtFile string `json:"crtFile"`    //证书路径
+	KeyFile string `json:"keyFile"`    //秘钥路径
+}                                      //普通的RPC监听(不带tls加密)可以在内网供agent连接使用
+
 type SocketConfig struct {
 	Enabled bool   `json:"enabled"`
 	Listen  string `json:"listen"`
@@ -76,6 +83,7 @@ type TsdbConfig struct {
 
 type TransferConfig struct {
 	Enabled     bool              `json:"enabled"`
+	UseTLS      bool              `json:"useTLS"`     //转发数据到其他的transfer时是否使用tls加密
 	Batch       int               `json:"batch"`
 	ConnTimeout int               `json:"connTimeout"`
 	CallTimeout int               `json:"callTimeout"`
@@ -103,6 +111,7 @@ type GlobalConfig struct {
 	MinStep  int             `json:"minStep"` //最小周期,单位sec
 	Http     *HttpConfig     `json:"http"`
 	Rpc      *RpcConfig      `json:"rpc"`
+	RpcWithTLS     *RpcWithTLSConfig  `json:"rpcWithTLS"`
 	Socket   *SocketConfig   `json:"socket"`
 	Judge    *JudgeConfig    `json:"judge"`
 	Graph    *GraphConfig    `json:"graph"`
