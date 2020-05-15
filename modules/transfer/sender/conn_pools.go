@@ -55,7 +55,7 @@ func initConnPools() {
 			transferInstances.Add(instance)
 		}
 		TransferConnPools = backend.CreateSafeJsonrpcConnPools(cfg.Transfer.MaxConns, cfg.Transfer.MaxIdle,
-			cfg.Transfer.ConnTimeout, cfg.Transfer.CallTimeout, transferInstances.ToSlice())
+			cfg.Transfer.ConnTimeout, cfg.Transfer.CallTimeout, transferInstances.ToSlice(),cfg.Transfer.UseTLS)
 	}
 }
 

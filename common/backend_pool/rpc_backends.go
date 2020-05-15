@@ -22,7 +22,6 @@ import (
 	"net/rpc/jsonrpc"
 	"sync"
 	"time"
-	"github.com/open-falcon/falcon-plus/modules/transfer/g"
 	connp "github.com/toolkits/conn_pool"
 	rpcpool "github.com/toolkits/conn_pool/rpc_conn_pool"
 )
@@ -52,7 +51,7 @@ func CreateSafeRpcConnPools(maxConns, maxIdle, connTimeout, callTimeout int, clu
 	return cp
 }
 
-func CreateSafeJsonrpcConnPools(maxConns, maxIdle, connTimeout, callTimeout int, cluster []string) *SafeRpcConnPools {
+func CreateSafeJsonrpcConnPools(maxConns, maxIdle, connTimeout, callTimeout int, cluster []string, useTLS bool) *SafeRpcConnPools {
 	cp := &SafeRpcConnPools{M: make(map[string]*connp.ConnPool), MaxConns: maxConns, MaxIdle: maxIdle,
 		ConnTimeout: connTimeout, CallTimeout: callTimeout}
 
@@ -61,7 +60,7 @@ func CreateSafeJsonrpcConnPools(maxConns, maxIdle, connTimeout, callTimeout int,
 		if _, exist := cp.M[address]; exist {
 			continue
 		}
-		cp.M[address] = createOneJsonrpcPool(address, address, ct, maxConns, maxIdle)
+		cp.M[address] = createOneJsonrpcPool(address, address, ct, maxConns, maxIdle, useTLS)
 	}
 
 	return cp
@@ -150,7 +149,7 @@ func createOneRpcPool(name string, address string, connTimeout time.Duration, ma
 	return p
 }
 
-func createOneJsonrpcPool(name string, address string, connTimeout time.Duration, maxConns int, maxIdle int) *connp.ConnPool {
+func createOneJsonrpcPool(name string, address string, connTimeout time.Duration, maxConns int, maxIdle int, useTLS bool) *connp.ConnPool {
 	p := connp.NewConnPool(name, address, int32(maxConns), int32(maxIdle))
 	p.New = func(connName string) (connp.NConn, error) {
 		_, err := net.ResolveTCPAddr("tcp", p.Address)
@@ -158,7 +157,7 @@ func createOneJsonrpcPool(name string, address string, connTimeout time.Duration
 			return nil, err
 		}
 
-		if !g.Config().Transfer.UseTLS { //通过读取配置文件确定是否使用tls来发送数据到transfer
+		if !useTLS { //通过新增的传入参数`useTLS`来确定是否使用tls来发送数据到transfer
 			conn, err := net.DialTimeout("tcp", p.Address, connTimeout)
 			if err != nil {
 				return nil, err
